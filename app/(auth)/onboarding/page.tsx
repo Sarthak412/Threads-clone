@@ -1,7 +1,7 @@
 async function page() {
   return (
     <div>
-      <h1>Onboarding Page</h1>
+      <h1 className="text-white">Onboarding Page</h1>
     </div>
   );
 }
