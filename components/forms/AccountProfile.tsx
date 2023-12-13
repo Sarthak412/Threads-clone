@@ -1,9 +1,9 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserValidation } from "@/lib/validations/user";
+
+import { useForm } from "react-hook-form";
 
 // * Form Components
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -43,13 +42,13 @@ interface Props {
 }
 
 const AccountProfile = ({ user, btnTitle }: Props) => {
-  const [files, setFiles] = useState<File[]>([]);
-
   const router = useRouter();
 
   const pathname = usePathname();
 
   const { startUpload } = useUploadThing("media");
+
+  const [files, setFiles] = useState<File[]>([]);
 
   const form = useForm({
     resolver: zodResolver(UserValidation),
@@ -60,6 +59,36 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
       bio: user?.bio || "",
     },
   });
+
+  const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+    const blob = values.profile_photo;
+
+    const hasImageChanged = isBase64Image(blob);
+
+    if (hasImageChanged) {
+      const imgRes = await startUpload(files);
+
+      if (imgRes && imgRes[0].url) {
+        values.profile_photo = imgRes[0].url;
+      }
+    }
+
+    // Todo: Update user profile
+    await updateUser({
+      name: values.name,
+      path: pathname,
+      username: values.username,
+      userId: user.id,
+      bio: values.bio,
+      image: values.profile_photo,
+    });
+
+    if (pathname === "/profile/edit") {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
 
   const handleImage = (
     e: ChangeEvent<HTMLInputElement>,
@@ -82,36 +111,6 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
       };
 
       fileReader.readAsDataURL(file);
-    }
-  };
-
-  const onSubmit = async (values: z.infer<typeof UserValidation>) => {
-    const blob = values.profile_photo;
-
-    const hasImageChanged = isBase64Image(blob);
-
-    if (hasImageChanged) {
-      const imgRes = await startUpload(files);
-
-      if (imgRes && imgRes[0].fileUrl) {
-        values.profile_photo = imgRes[0].fileUrl;
-      }
-    }
-
-    // Todo: Update user profile
-    await updateUser({
-      userId: user.id,
-      username: values.username,
-      name: values.name,
-      bio: values.bio,
-      image: values.profile_photo,
-      path: pathname,
-    });
-
-    if (pathname === "/profile/edit") {
-      router.back();
-    } else {
-      router.push("/");
     }
   };
 
@@ -150,12 +149,11 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                 <Input
                   type="file"
                   accept="image/*"
-                  placeholder="Upload a photo"
+                  placeholder="Add Profile photo"
                   className="account-form_image-input"
                   onChange={(e) => handleImage(e, field.onChange)}
                 />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
