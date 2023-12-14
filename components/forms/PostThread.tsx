@@ -23,6 +23,8 @@ import * as z from "zod";
 
 import { Textarea } from "../ui/textarea";
 
+import { useOrganization } from "@clerk/nextjs";
+
 // import { updateUser } from "@/lib/actions/user.actions";
 
 import { usePathname, useRouter } from "next/navigation";
@@ -38,6 +40,8 @@ function PostThread({ userId }: Props) {
 
   const pathname = usePathname();
 
+  const { organization } = useOrganization();
+
   const form = useForm({
     resolver: zodResolver(ThreadValidation),
     defaultValues: {
@@ -50,7 +54,7 @@ function PostThread({ userId }: Props) {
     await createThread({
       text: values.thread,
       author: userId,
-      communityId: null,
+      communityId: organization ? organization.id : null,
       path: pathname,
     });
 

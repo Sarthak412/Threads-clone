@@ -1,11 +1,11 @@
 // import { UserButton } from "@clerk/nextjs";
 
 import ThreadCard from "@/components/cards/ThreadCard";
-import { fetchThreads } from "@/lib/actions/thread.actions";
+import { fetchPosts } from "@/lib/actions/thread.actions";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function Home() {
-  const result = await fetchThreads(1, 30);
+  const result = await fetchPosts(1, 30);
 
   const user = await currentUser();
 
@@ -13,21 +13,21 @@ export default async function Home() {
     <div>
       <h1 className="head-text text-left">
         <section className="mt-9 flex flex-col gap-10">
-          {result.threads.length === 0 ? (
+          {result.posts.length === 0 ? (
             <p className="no-result">No Threads</p>
           ) : (
             <>
-              {result.threads.map((thread) => (
+              {result.posts.map((post) => (
                 <ThreadCard
-                  key={thread._id}
-                  id={thread._id}
+                  key={post._id}
+                  id={post._id}
                   currentUserId={user?.id || " "}
-                  parentId={thread.parentId}
-                  content={thread.text}
-                  author={thread.author}
-                  community={thread.community}
-                  createdAt={thread.createdAt}
-                  comments={thread.children}
+                  parentId={post.parentId}
+                  content={post.text}
+                  author={post.author}
+                  community={post.community}
+                  createdAt={post.createdAt}
+                  comments={post.children}
                 />
               ))}
             </>
